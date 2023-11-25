@@ -417,7 +417,75 @@
 
 18. Using a mock function
 
-    
+    Let's imagine we're testing an implementation of a function `forEach`, which invokes a callback for each item in a supplied array.
 
-19. 
+    ```
+    // forEach.js
+    
+    export function forEach(items, callback) {
+      for (let index = 0; index < items.length; index++) {
+        callback(items[index]);
+      }
+    }
+    ```
+
+    To test this function, we can use a mock function, and inspect the mock's state to ensure the callback is invoked as expected.
+
+    ```
+    // forEach.test.js
+    
+    const forEach = require('./forEach');
+    
+    const mockCallback = jest.fn(x => 42 + x);
+    
+    test('forEach mock function', () => {
+    	forEach([0, 1], mockCallback);
+    	
+    	// The mock function was called twice
+      expect(mockCallback.mock.calls).toHaveLength(2);
+    
+      // The first argument of the first call to the function was 0
+      expect(mockCallback.mock.calls[0][0]).toBe(0);
+    
+      // The first argument of the second call to the function was 1
+      expect(mockCallback.mock.calls[1][0]).toBe(1);
+    
+      // The return value of the first call to the function was 42
+      expect(mockCallback.mock.results[0].value).toBe(42);
+    });
+    ```
+
+19. Snapshot Testing
+
+    A typical snapshot test case renders a UI component, takes a snapshot, then compares it to a reference snapshot file stored alongside the test. The test will fail if the two snapshots do not match: either the change is unexpected, or the reference snapshot needs to be updated to the new version of the UI component.
+
+20. Snapshot Testing with Jest
+
+    A similar approach can be taken when it comes to testing your React components. Instead of rendering the graphical UI, which would require building the entire app, you can use a test renderer to quickly generate a serializable value for your React tree. Consider this example test for a Link component:
+
+    ```
+    import renderer from 'react-test-renderer';
+    import Link from '../Link';
+    
+    it('renders correctly', () => {
+      const tree = renderer
+        .create(<Link page="http://www.facebook.com">Facebook</Link>)
+        .toJSON();
+      expect(tree).toMatchSnapshot();
+    });
+    ```
+
+21. Updating Snapshots
+
+    It's straightforward to spot when a snapshot test fails after a bug has been introduced. When that happens, go ahead and fix the issue and make sure your snapshot tests are passing again. Now, let's talk about the case when a snapshot test is failing due to an intentional implementation change.
+
+    ```
+    // Updated test case with a Link to a different address
+    it('renders correctly', () => {
+      const tree = renderer
+        .create(<Link page="http://www.instagram.com">Instagram</Link>)
+        .toJSON();
+      expect(tree).toMatchSnapshot();
+    });
+    ```
 
